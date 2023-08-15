@@ -31,7 +31,12 @@ def create_embeddings():
     return OpenAIEmbeddings()
 
 def create_chroma_from_documents(texts, embeddings):
-    return Chroma.from_documents(texts, embeddings)
+    if os.path.exists("./chroma_db"):
+        # If the directory exists, load the existing Chroma instance
+        return Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+    else:
+        # If the directory doesn't exist, create a new Chroma instance and save it to disk
+        return Chroma.from_documents(texts, embeddings, persist_directory="./chroma_db")
 
 def create_qa_chain(llm, retriever, memory):
     return ConversationalRetrievalChain.from_llm(llm, retriever, memory=memory)
