@@ -8,6 +8,8 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 from langchain.llms import OpenAI
 from dotenv import load_dotenv
+from langchain.schema import SystemMessage
+from langchain.document_loaders import PyPDFLoader
 import os
 
 load_dotenv()  # Load variables from .env file
@@ -41,6 +43,23 @@ def create_chroma_from_documents(texts, embeddings):
 def create_qa_chain(llm, retriever, memory):
     return ConversationalRetrievalChain.from_llm(llm, retriever, memory=memory)
 
+def add_new_pdf():
+    # Load and preprocess the PDF document
+    loader = PyPDFLoader('accounting_standard_pdfs/INDAS2.pdf')
+    documents = loader.load()
+
+    # Split the documents into smaller chunks for processing
+    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+    texts = text_splitter.split_documents(documents)
+
+    embeddings = OpenAIEmbeddings()
+
+    vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+
+    page_content_list = [doc.page_content for doc in texts]
+
+    vectorstore.add_texts(page_content_list)
+
 def main():
     directory = "accounting_standard_pdfs"
     chunk_size = 1000
@@ -56,9 +75,11 @@ def main():
 
     qa = create_qa_chain(OpenAI(temperature=0), docsearch.as_retriever(), memory=memory)
 
+    #add_new_pdf()
+
     queries = [
         "What are statement of cash flow",
-        "How are they calculated"
+        "Difference between INDAS7 and INDAS2"
     ]
 
     for query in queries:
