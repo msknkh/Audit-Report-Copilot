@@ -7,7 +7,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
 # Load and preprocess the PDF document
-from langchain.document_loaders import PyPDFLoader
+from langchain.document_loaders import PyPDFLoader, PyPDFDirectoryLoader
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 from langchain.embeddings import OpenAIEmbeddings
@@ -51,9 +51,8 @@ def load_documents(directory):
 def split_documents_into_chunks(docs, chunk_size, chunk_overlap):
 
     chunked_docs = []
-    for doc in file.docs:
+    for doc in docs:
         text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-            model_name=model_name,
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
         )
@@ -71,12 +70,10 @@ def split_documents_into_chunks(docs, chunk_size, chunk_overlap):
             )
             chunked_docs.append(doc)
 
-    chunked_file = file.copy()
-    chunked_file.docs = chunked_docs
+    return chunked_docs
 
-    text_splitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-    return text_splitter.split_documents(docs)
-
+    #text_splitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    #return text_splitter.split_documents(docs)
 
 
 def create_chroma_from_documents(texts, embeddings):
@@ -106,6 +103,7 @@ def add_new_pdf():
     page_content_list = [doc.page_content for doc in texts]
 
     vectorstore.add_texts(page_content_list)
+
 
 def main():
     directory = "accounting_standard_pdfs"
