@@ -44,9 +44,15 @@ def create_embeddings():
 load_dotenv()  # Load variables from .env file
 
 
+#def load_documents(directory):
+#    loader = PyPDFDirectoryLoader(directory)
+#    return loader.load()
+
 def load_documents(directory):
-    loader = PyPDFDirectoryLoader(directory)
+    #loader = PyPDFDirectoryLoader(directory)
+    loader = Docx2txtLoader("/Users/muskankhandelwal/auditGPT/accounting_standard_pdfs/Basel III Simplified version.docx")
     return loader.load()
+
 
 def split_documents_into_chunks(docs, chunk_size, chunk_overlap):
 
@@ -117,20 +123,21 @@ def main():
     docsearch = create_chroma_from_documents(texts, embeddings)
     llm = create_llm()
 
-    memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+    memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, return_source_documents=True)
 
     qa = create_qa_chain(llm, docsearch.as_retriever(), memory=memory)
 
     #add_new_pdf()
 
     queries = [
-        "What are statement of cash flow",
-        "Difference between INDAS7 and INDAS2"
+        "What is IRRBB",
+        "Governance, measurement and management of Interest Rate Risk in Banking Book"
     ]
 
     for query in queries:
         result = qa({"question": query})
         print(result['answer'])
+        #print(result["source_documents"])
 
 if __name__ == "__main__":
     main()

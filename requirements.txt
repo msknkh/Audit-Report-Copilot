@@ -3,3 +3,7 @@ openai
 langchain 
 chromadb 
 pypdf
+sentence_transformers
+docarray
+streamlit
+replicate
